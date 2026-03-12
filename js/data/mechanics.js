@@ -109,7 +109,6 @@ export const EXCITATION_DATA = {
 };
 
 export const EXCITATION_TYPES = [
-  { id: 'none', name: 'なし' },
   { id: 'attack', name: '攻撃激化' },
   { id: 'affinity', name: '会心激化' },
   { id: 'element', name: '属性激化' }

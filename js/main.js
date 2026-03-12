@@ -88,6 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
             opt.textContent = type.name;
             excitationSelect.appendChild(opt);
         });
+        excitationSelect.value = 'attack';
 
         // Element Types
         ELEMENT_TYPES.forEach(el => {
@@ -575,6 +576,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 7. Skills
         if (activeSkillsList) activeSkillsList.innerHTML = '';
         let activeCount = 0;
+        const activeSKillData = [];
 
         SKILLS.forEach(skill => {
             const select = cachedSkillSelects[skill.id];
@@ -582,21 +584,52 @@ document.addEventListener('DOMContentLoaded', () => {
                 const lvl = parseInt(select.value, 10);
                 calc.setSkillLevel(skill.id, lvl);
 
-                if (lvl > 0 && activeSkillsList) {
+                if (lvl > 0) {
                     activeCount++;
-                    const badge = document.createElement('span');
-                    badge.style.cssText = 'background: rgba(212, 175, 55, 0.2); color: #fff; padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(212, 175, 55, 0.3); display: inline-block; word-break: keep-all; font-weight: 500;';
-                    badge.textContent = `${skill.name} Lv${lvl}`;
-                    activeSkillsList.appendChild(badge);
+                    activeSKillData.push({
+                        ...skill,
+                        currentLevel: lvl,
+                        originalIndex: SKILLS.indexOf(skill)
+                    });
                 }
             }
         });
 
+        // Sort activeSkills: Weapon > Armor > Series > Group, then by Level desc, then by originalIndex asc
+        const categoryPriority = {
+            'weapon': 1,
+            'armor': 2,
+            'series': 3,
+            'group': 4
+        };
+
+        activeSKillData.sort((a, b) => {
+            const catA = categoryPriority[a.mainCategory] || 99;
+            const catB = categoryPriority[b.mainCategory] || 99;
+            if (catA !== catB) return catA - catB;
+            
+            // Level descending
+            if (b.currentLevel !== a.currentLevel) return b.currentLevel - a.currentLevel;
+            
+            // Internal order
+            return a.originalIndex - b.originalIndex;
+        });
+
+        if (activeSkillsList) {
+            if (activeSKillData.length === 0) {
+                activeSkillsList.innerHTML = '<span style="color:var(--color-text-muted); font-style: italic;">スキルは設定されていません</span>';
+            } else {
+                activeSKillData.forEach(skill => {
+                    const badge = document.createElement('span');
+                    badge.style.cssText = 'background: rgba(212, 175, 55, 0.2); color: #fff; padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(212, 175, 55, 0.3); display: inline-block; word-break: keep-all; font-weight: 500;';
+                    badge.textContent = `${skill.name} Lv${skill.currentLevel}`;
+                    activeSkillsList.appendChild(badge);
+                });
+            }
+        }
+
         if (activeSkillsCount) {
             activeSkillsCount.textContent = `${activeCount}個`;
-            if (activeCount === 0 && activeSkillsList) {
-                activeSkillsList.innerHTML = '<span style="color:var(--color-text-muted); font-style: italic;">スキルは設定されていません</span>';
-            }
         }
 
         // 8. Motion Value

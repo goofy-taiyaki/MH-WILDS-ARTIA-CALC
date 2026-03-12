@@ -28,7 +28,7 @@ export function findOptimalArtiaConfiguration(state) {
     const weapon = WEAPONS.find(w => w.type === weaponTypeId);
     const hitzone = (monsterName && hitzonePartIndex !== "") ? MONSTERS[monsterName].parts[hitzonePartIndex] : null;
 
-    const validExcitations = ['none', 'attack', 'affinity', 'element'];
+    const validExcitations = ['attack', 'affinity', 'element'];
     const validParts = RESTORATION_PARTS.filter(p => p.id !== 'none');
     const validBonuses = RESTORATION_BONUSES.filter(b => b.id !== 'none');
 

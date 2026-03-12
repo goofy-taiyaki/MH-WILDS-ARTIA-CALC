@@ -235,17 +235,10 @@ label {
   transform: translateY(-5px);
 }
 
+/* サイドの固定設定を解除 */
 .selection-panel,
 .stats-panel {
-  position: sticky;
-  top: var(--spacing-md);
   align-self: start;
-  z-index: 10;
-}
-
-.selection-panel.glass-card:hover,
-.stats-panel.glass-card:hover {
-  transform: none;
 }
 
 .btn-primary {
