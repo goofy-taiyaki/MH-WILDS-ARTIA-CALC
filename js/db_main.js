@@ -84,68 +84,104 @@ document.addEventListener('DOMContentLoaded', () => {
     let skHtml = '';
     let navSkHtml = '';
 
-    SKILLS.forEach(s => {
-        navSkHtml += `<li style="margin-bottom: 0.1rem;"><a href="#skill-${s.id}">${s.name}</a></li>`;
+    const MAIN_CATEGORY_NAMES = {
+        weapon: '武器スキル',
+        armor: '防具スキル',
+        series: 'シリーズスキル',
+        group: 'グループスキル'
+    };
 
-        const WEAPON_NAMES = {
-            'gs': '大剣', 'ls': '太刀', 'sns': '片手剣', 'db': '双剣',
-            'hammer': 'ハンマー', 'hh': '狩猟笛', 'lance': 'ランス', 'gl': 'ガンランス',
-            'sa': 'スラッシュアックス', 'cb': 'チャージアックス', 'ig': '操虫棍',
-            'bow': '弓', 'lbg': 'ライトボウガン', 'hbg': 'ヘビィボウガン'
-        };
+    const MAIN_CATEGORY_ORDER = ['weapon', 'armor', 'series', 'group'];
 
-        const formatEffect = (e) => {
-            let parts = [];
-            if (e.attackAdd !== undefined && e.attackAdd !== 0) parts.push(`攻撃力 +${e.attackAdd}`);
-            if (e.attackMult !== undefined && e.attackMult !== 0) parts.push(`物理乗算 x${(1 + e.attackMult).toFixed(2).replace(/\.?0+$/, '')}`);
-            if (e.affinity !== undefined && e.affinity !== 0) parts.push(`会心率 ${e.affinity > 0 ? '+' + e.affinity : e.affinity}%`);
-            if (e.elementAdd !== undefined && e.elementAdd !== 0) parts.push(`属性値 +${e.elementAdd}`);
-            if (e.elementMult !== undefined && e.elementMult !== 0) parts.push(`属性乗算 x${(1 + e.elementMult).toFixed(2).replace(/\.?0+$/, '')}`);
-            if (e.critMultAdd !== undefined && e.critMultAdd !== 0) parts.push(`超会心加算 +${e.critMultAdd}`);
-            if (e.elementCritMult !== undefined && e.elementCritMult !== 0) parts.push(`属性会心倍率 x${(1 + e.elementCritMult).toFixed(2).replace(/\.?0+$/, '')}`);
-            return parts.length > 0 ? parts.join(', ') : '記載なし';
-        };
+    MAIN_CATEGORY_ORDER.forEach(catKey => {
+        const catSkills = SKILLS.filter(s => s.mainCategory === catKey);
+        if (catSkills.length === 0) return;
 
-        let effectsText = '';
-        if (s.weaponSpecific && s.weaponEffects) {
-            effectsText = `<table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.8rem; margin-top:5px; border:1px solid rgba(255,255,255,0.05);">
-                <thead style="background:rgba(212, 175, 55, 0.1);">
-                    <tr><th style="padding:6px 8px; width:120px;">武器種</th><th style="padding:6px 8px;">効果詳細 (各Lv)</th></tr>
-                </thead><tbody>`;
-            for (const [wType, effects] of Object.entries(s.weaponEffects)) {
-                const wName = WEAPON_NAMES[wType] || wType;
-                let wLvs = effects.map(e => `<strong>Lv${e.level}:</strong> ${formatEffect(e)}`).join('<br>');
-                effectsText += `<tr style="border-top:1px solid rgba(255,255,255,0.05);">
-                    <td style="padding:6px 8px; vertical-align:top; color:var(--color-primary);">${wName}</td>
-                    <td style="padding:6px 8px;">${wLvs}</td>
-                </tr>`;
-            }
-            effectsText += `</tbody></table>`;
-        } else if (s.effects) {
-            effectsText = `<table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.8rem; margin-top:5px; border:1px solid rgba(255,255,255,0.05);">
-                <thead style="background:rgba(212, 175, 55, 0.1);">
-                    <tr><th style="padding:6px 8px; width:60px;">Lv</th><th style="padding:6px 8px;">効果</th></tr>
-                </thead><tbody>`;
-            s.effects.forEach(e => {
-                effectsText += `<tr style="border-top:1px solid rgba(255,255,255,0.05);">
-                    <td style="padding:6px 8px; color:var(--color-primary); font-weight:bold;">Lv${e.level}</td>
-                    <td style="padding:6px 8px;">${formatEffect(e)}</td>
-                </tr>`;
-            });
-            effectsText += `</tbody></table>`;
-        }
+        const catName = MAIN_CATEGORY_NAMES[catKey];
 
+        // Sidebar Category (Collapsible)
+        navSkHtml += `
+            <li style="margin-bottom: 0.5rem;">
+                <details class="nav-category-details" open>
+                    <summary style="cursor: pointer; padding: 0.3rem 0.5rem; color: var(--color-primary); font-weight: bold; user-select: none; border-radius: 4px; background: rgba(212, 175, 55, 0.05);">
+                        ${catName}
+                    </summary>
+                    <ul class="db-nav-list" style="padding-left: 0.8rem; margin-top: 0.2rem; font-size: 0.8rem;">`;
+
+        // Main Content Category Header
         skHtml += `
-            <details id="skill-${s.id}" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px; margin-bottom: 0.5rem;">
-                <summary style="padding: 0.8rem; cursor: pointer; color: var(--color-primary); font-weight: bold; user-select: none;">
-                    ${s.name} <span style="font-size: 0.75rem; color: var(--color-text-muted); font-weight: normal; margin-left: 0.5rem;">(最大Lv${s.maxLevel})</span>
-                </summary>
-                <div style="padding: 0 0.8rem 0.8rem 0.8rem;">
-                    ${effectsText}
-                </div>
-            </details>
-        `;
+            <div id="cat-${catKey}" class="skill-category-group" style="margin-bottom: 2rem;">
+                <h3 style="color: var(--color-primary); border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 0.5rem; margin-bottom: 1rem; font-size: 1.2rem;">
+                    ${catName}
+                </h3>`;
+
+        catSkills.forEach(s => {
+            navSkHtml += `<li style="margin-bottom: 0.1rem;"><a href="#skill-${s.id}">${s.name}</a></li>`;
+
+            const WEAPON_NAMES = {
+                'gs': '大剣', 'ls': '太刀', 'sns': '片手剣', 'db': '双剣',
+                'hammer': 'ハンマー', 'hh': '狩猟笛', 'lance': 'ランス', 'gl': 'ガンランス',
+                'sa': 'スラッシュアックス', 'cb': 'チャージアックス', 'ig': '操虫棍',
+                'bow': '弓', 'lbg': 'ライトボウガン', 'hbg': 'ヘビィボウガン'
+            };
+
+            const formatEffect = (e) => {
+                let parts = [];
+                if (e.attackAdd !== undefined && e.attackAdd !== 0) parts.push(`攻撃力 +${e.attackAdd}`);
+                if (e.attackMult !== undefined && e.attackMult !== 0) parts.push(`物理乗算 x${(1 + e.attackMult).toFixed(2).replace(/\.?0+$/, '')}`);
+                if (e.affinity !== undefined && e.affinity !== 0) parts.push(`会心率 ${e.affinity > 0 ? '+' + e.affinity : e.affinity}%`);
+                if (e.elementAdd !== undefined && e.elementAdd !== 0) parts.push(`属性値 +${e.elementAdd}`);
+                if (e.elementMult !== undefined && e.elementMult !== 0) parts.push(`属性乗算 x${(1 + e.elementMult).toFixed(2).replace(/\.?0+$/, '')}`);
+                if (e.critMultAdd !== undefined && e.critMultAdd !== 0) parts.push(`超会心加算 +${e.critMultAdd}`);
+                if (e.elementCritMult !== undefined && e.elementCritMult !== 0) parts.push(`属性会心倍率 x${(1 + e.elementCritMult).toFixed(2).replace(/\.?0+$/, '')}`);
+                return parts.length > 0 ? parts.join(', ') : '記載なし';
+            };
+
+            let effectsText = '';
+            if (s.weaponSpecific && s.weaponEffects) {
+                effectsText = `<table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.8rem; margin-top:5px; border:1px solid rgba(255,255,255,0.05);">
+                    <thead style="background:rgba(212, 175, 55, 0.1);">
+                        <tr><th style="padding:6px 8px; width:120px;">武器種</th><th style="padding:6px 8px;">効果詳細 (各Lv)</th></tr>
+                    </thead><tbody>`;
+                for (const [wType, effects] of Object.entries(s.weaponEffects)) {
+                    const wName = WEAPON_NAMES[wType] || wType;
+                    let wLvs = effects.map(e => `<strong>Lv${e.level}:</strong> ${formatEffect(e)}`).join('<br>');
+                    effectsText += `<tr style="border-top:1px solid rgba(255,255,255,0.05);">
+                        <td style="padding:6px 8px; vertical-align:top; color:var(--color-primary);">${wName}</td>
+                        <td style="padding:6px 8px;">${wLvs}</td>
+                    </tr>`;
+                }
+                effectsText += `</tbody></table>`;
+            } else if (s.effects) {
+                effectsText = `<table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.8rem; margin-top:5px; border:1px solid rgba(255,255,255,0.05);">
+                    <thead style="background:rgba(212, 175, 55, 0.1);">
+                        <tr><th style="padding:6px 8px; width:60px;">Lv</th><th style="padding:6px 8px;">効果</th></tr>
+                    </thead><tbody>`;
+                s.effects.forEach(e => {
+                    effectsText += `<tr style="border-top:1px solid rgba(255,255,255,0.05);">
+                        <td style="padding:6px 8px; color:var(--color-primary); font-weight:bold;">Lv${e.level}</td>
+                        <td style="padding:6px 8px;">${formatEffect(e)}</td>
+                    </tr>`;
+                });
+                effectsText += `</tbody></table>`;
+            }
+
+            skHtml += `
+                <details id="skill-${s.id}" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px; margin-bottom: 0.5rem;">
+                    <summary style="padding: 0.8rem; cursor: pointer; color: var(--color-primary); font-weight: bold; user-select: none;">
+                        ${s.name} <span style="font-size: 0.75rem; color: var(--color-text-muted); font-weight: normal; margin-left: 0.5rem;">(最大Lv${s.maxLevel})</span>
+                    </summary>
+                    <div style="padding: 0 0.8rem 0.8rem 0.8rem;">
+                        ${effectsText}
+                    </div>
+                </details>
+            `;
+        });
+
+        navSkHtml += `</ul></details></li>`;
+        skHtml += `</div>`;
     });
+
     skDb.innerHTML = skHtml;
     if (navSkillsSublist) navSkillsSublist.innerHTML = navSkHtml;
 
