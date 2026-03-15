@@ -132,6 +132,7 @@
                         style="font-size: 1rem; color: var(--color-primary); margin-bottom: 0.6rem; text-align: center; letter-spacing: 0.1em; font-weight: bold; position: relative; z-index: 2;">
                         参照ステータス</h3>
 
+                    <!-- 1段目: 攻撃力, 会心率, 属性値 -->
                     <div
                         style="display: flex; justify-content: space-around; text-align: center; gap: 0.2rem; margin-bottom: 0.8rem; position: relative; z-index: 2;">
                         <div style="font-size: 0.8rem; color: var(--color-text-muted);">攻撃力<br><span id="display-attack"
@@ -145,6 +146,19 @@
                         </div>
                     </div>
 
+                    <!-- 2段目: 武器種, 武器属性 (横並び) -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.8rem; border-top: 1px solid rgba(255,215,0,0.1); padding-top: 0.8rem;">
+                        <div class="input-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.7rem;">武器種</label>
+                            <select id="weapon-type-select" style="font-size: 0.8rem;"></select>
+                        </div>
+                        <div class="input-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.7rem;">武器属性</label>
+                            <select id="element-type-select" style="font-size: 0.8rem;"></select>
+                        </div>
+                    </div>
+
+                    <!-- 3段目: モーション -->
                     <div style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px solid rgba(255,215,0,0.1);">
                         <label style="font-size: 0.7rem;">モーション</label>
                         <select id="motion-select" style="font-size: 0.8rem; width: 100%;">
@@ -152,6 +166,7 @@
                         </select>
                     </div>
 
+                    <!-- 4段目: モーション値, 属性補正 (横並び) -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.6rem;">
                         <div class="input-group" style="margin-bottom: 0;">
                             <label style="font-size: 0.7rem;">モーション値</label>
@@ -165,7 +180,8 @@
                         </div>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.8rem;">
+                    <!-- 5段目: 切れ味 -->
+                    <div style="margin-top: 0.8rem;">
                         <div class="input-group" id="target-sharpness-container" style="margin-bottom: 0;">
                             <label style="font-size: 0.7rem;">斬れ味</label>
                             <select id="target-sharpness-select"
@@ -179,8 +195,12 @@
                                 <option value="purple">紫</option>
                             </select>
                         </div>
+                    </div>
+
+                    <!-- 6段目: 武器別要素 -->
+                    <div style="margin-top: 0.8rem;">
                         <div class="input-group" id="bowgun-settings-container"
-                            style="display: none; grid-column: span 2; margin-top: 0.2rem;">
+                            style="display: none; margin-top: 0.2rem;">
                             <label
                                 style="font-size: 0.7rem; color: #ffcc00; display: block; margin-bottom: 0.3rem;">ボウガン特有補正</label>
                             <div
@@ -198,7 +218,7 @@
 
                         <!-- 双剣特有補正 -->
                         <div class="input-group" id="db-settings-container"
-                            style="display: none; grid-column: span 2; margin-top: 0.2rem;">
+                            style="display: none; margin-top: 0.2rem;">
                             <label
                                 style="font-size: 0.7rem; color: #ffcc00; display: block; margin-bottom: 0.3rem;">双剣特有補正</label>
                             <div
@@ -212,7 +232,7 @@
 
                         <!-- 太刀特有補正 -->
                         <div class="input-group" id="ls-settings-container"
-                            style="display: none; grid-column: span 2; margin-top: 0.2rem;">
+                            style="display: none; margin-top: 0.2rem;">
                             <label
                                 style="font-size: 0.7rem; color: #ffcc00; display: block; margin-bottom: 0.3rem;">太刀特有補正</label>
                             <div
@@ -230,7 +250,7 @@
 
                         <!-- スラッシュアックス特有補正 -->
                         <div class="input-group" id="sa-settings-container"
-                            style="display: none; grid-column: span 2; margin-top: 0.2rem;">
+                            style="display: none; margin-top: 0.2rem;">
                             <label
                                 style="font-size: 0.7rem; color: #ffcc00; display: block; margin-bottom: 0.3rem;">スラッシュアックス特有補正</label>
                             <div
@@ -247,7 +267,7 @@
 
                         <!-- 操虫棍特有補正 -->
                         <div class="input-group" id="ig-settings-container"
-                            style="display: none; grid-column: span 2; margin-top: 0.2rem;">
+                            style="display: none; margin-top: 0.2rem;">
                             <label
                                 style="font-size: 0.7rem; color: #ffcc00; display: block; margin-bottom: 0.3rem;">操虫棍特有補正</label>
                             <div
@@ -286,19 +306,9 @@
                     </div>
                 </div>
 
-                <div class="input-group">
-                    <label>武器種</label>
-                    <select id="weapon-type-select"></select>
-                </div>
-
-                <div class="input-group">
-                    <label>武器属性</label>
-                    <select id="element-type-select"></select>
-                </div>
-
                 <!-- 詳細設定をアコーディオン化 -->
                 <details class="artia-details" open>
-                    <summary>詳細設定（激化・復元）</summary>
+                    <summary>詳細設定（加算・復元）</summary>
                     <div class="details-content">
                         <div class="input-group" style="margin-bottom: 0;">
                             <label>激化タイプ</label>
