@@ -1,4 +1,4 @@
-import { WEAPON_TYPES, SKILLS, EXCITATION_DATA, EXCITATION_TYPES, MONSTERS, MOTION_VALUES } from './data.js';
+import { WEAPON_TYPES, SKILLS, EXCITATION_DATA, EXCITATION_TYPES, MONSTERS, MOTION_VALUES, ARMOR } from './data.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </thead><tbody>`;
                 s.effects.forEach(e => {
                     effectsText += `<tr style="border-top:1px solid rgba(255,255,255,0.05);">
-                        <td style="padding:6px 8px; color:var(--color-primary); font-weight:bold;">Lv${e.level}</td>
+                        <td style="padding:6px 8px; color:var(--color-primary); font-weight:bold; white-space: nowrap;">Lv${e.level}${e.name ? ' ' + e.name : ''}</td>
                         <td style="padding:6px 8px;">${formatEffect(e)}</td>
                     </tr>`;
                 });
@@ -241,5 +241,132 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (navSublist) navSublist.innerHTML = navHtml;
     mvDb.innerHTML = mvHtml;
+
+    // Render Armor
+    const arDb = document.getElementById('db-armor');
+    const navArmorSublist = document.getElementById('nav-armor-sublist');
+    let arHtml = '';
+    let navArHtml = '';
+
+    const PART_NAME_MAP = {
+        'head': '頭', 'chest': '胴', 'arms': '腕', 'waist': '腰', 'legs': '脚'
+    };
+
+    const RES_ICONS = [
+        'icon/element_fire.png', 'icon/element_water.png', 'icon/element_thunder.png', 'icon/element_ice.png', 'icon/element_dragon.png'
+    ];
+
+    // Group ARMOR by series
+    const armorBySeries = {};
+    if (ARMOR) {
+        ARMOR.forEach(a => {
+            if (!armorBySeries[a.s]) armorBySeries[a.s] = [];
+            armorBySeries[a.s].push(a);
+        });
+    }
+
+    const seriesNames = Object.keys(armorBySeries).sort();
+
+    // Group series by rarity
+    const armorByRarity = { 4: {}, 5: {}, 6: {}, 7: {}, 8: {} };
+    seriesNames.forEach(sName => {
+        const firstPiece = armorBySeries[sName][0];
+        const rarity = firstPiece.ra || 7;
+        const key = rarity <= 4 ? 4 : rarity <= 5 ? 5 : rarity <= 6 ? 6 : rarity <= 7 ? 7 : 8;
+        if (!armorByRarity[key]) armorByRarity[key] = {};
+        armorByRarity[key][sName] = armorBySeries[sName];
+    });
+
+    const rarityColors = {
+        4: '#888888',
+        5: '#aaaaff',
+        6: '#88eebb',
+        7: '#ffdd66',
+        8: '#ff8844'
+    };
+    const rarityLabels = {
+        4: 'レア4以下',
+        5: 'レア5',
+        6: 'レア6',
+        7: 'レア7',
+        8: 'レア8'
+    };
+
+    let navArRarityHtml = '';
+
+    [4, 5, 6, 7, 8].forEach(rarity => {
+        const rarityGroup = armorByRarity[rarity];
+        if (!rarityGroup || Object.keys(rarityGroup).length === 0) return;
+
+        const color = rarityColors[rarity];
+        const label = rarityLabels[rarity];
+        const groupSeriesNames = Object.keys(rarityGroup).sort();
+
+        // Nav: rarity group header with series links inside
+        navArRarityHtml += `
+            <details class="rarity-nav-group">
+                <summary style="color: ${color};">◆ ${label}（${groupSeriesNames.length}種）</summary>
+                <ul>
+                    ${groupSeriesNames.map(s => `<li><a href="#armor-${s}">${s}</a></li>`).join('')}
+                </ul>
+            </details>`;
+
+        arHtml += `
+            <div style="margin-bottom: 0.5rem; padding: 0.4rem 0.8rem; background: rgba(${rarity===4?'136,136,136':rarity===5?'170,170,255':rarity===6?'136,238,187':rarity===7?'255,221,102':'255,136,68'},0.08); border-left: 3px solid ${color}; border-radius: 0 4px 4px 0;">
+                <span style="font-weight: bold; color: ${color}; font-size: 0.95rem;">◆ ${label}</span>
+            </div>`;
+
+        groupSeriesNames.forEach(sName => {
+            const pieces = rarityGroup[sName];
+            arHtml += `
+                <details id="armor-${sName}" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px; margin-bottom: 0.4rem; margin-left: 0.5rem;">
+                    <summary style="padding: 0.7rem; cursor: pointer; color: var(--color-primary); font-weight: bold; user-select: none; display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 0.7rem; color: ${color}; border: 1px solid ${color}; padding: 0.1rem 0.3rem; border-radius: 3px;">${label}</span>
+                        ${sName}
+                    </summary>
+                    <div style="padding: 0 0.8rem 0.8rem 0.8rem; overflow-x: auto;">
+                        <table class="db-table" style="margin-top: 0; min-width: 600px;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 15%;">部位 / 名称</th>
+                                    <th style="width: 8%; text-align:center;">防御</th>
+                                    <th style="width: 20%; text-align:center;">耐性 (火/水/雷/氷/龍)</th>
+                                    <th style="width: 12%; text-align:center;">スロット</th>
+                                    <th style="width: 30%;">発動スキル</th>
+                                    <th style="width: 15%;">特殊スキル</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+
+            pieces.forEach(p => {
+                const resHtml = p.r.map((v, i) => `<span style="color:${v > 0 ? '#ffcc00' : (v < 0 ? '#ff4d4d' : 'inherit')}">${v}</span>`).join(' / ');
+                const slotsHtml = p.sl.filter(s => s > 0).map(s => `[${s}]`).join(' ') || '-';
+                const skillsHtml = p.sk.map(sk => `${sk.n} Lv${sk.l}`).join('<br>');
+                let specialSkill = '';
+                if (p.ss) specialSkill += `<div style="font-size:0.8em; color:var(--color-primary);">[S] ${p.ss}</div>`;
+                if (p.gs) specialSkill += `<div style="font-size:0.8em; color:#32cd32;">[G] ${p.gs}</div>`;
+
+                arHtml += `<tr>
+                    <td><strong>${PART_NAME_MAP[p.p] || p.p}</strong><br><span style="font-size:0.85em;">${p.n}</span></td>
+                    <td style="text-align:center;">${p.d}</td>
+                    <td style="text-align:center; font-size:0.85em;">${resHtml}</td>
+                    <td style="text-align:center;">${slotsHtml}</td>
+                    <td style="font-size:0.85em; line-height:1.4;">${skillsHtml}</td>
+                    <td>${specialSkill || '-'}</td>
+                </tr>`;
+            });
+
+            arHtml += `
+                            </tbody>
+                        </table>
+                    </div>
+                </details>`;
+        });
+
+        arHtml += `<div style="margin-bottom: 1.5rem;"></div>`;
+    });
+
+    if (arDb) arDb.innerHTML = arHtml;
+    if (navArmorSublist) navArmorSublist.innerHTML = navArRarityHtml;
 
 });

@@ -394,6 +394,7 @@
 
     <script type="module">
         import { TALISMAN_GROUPS, TALISMAN_SLOTS, TALISMAN_COMBINATIONS } from './js/data/talisman.js';
+        import { DAMAGE_RELATED_SKILLS } from './js/data/damage_skills.js';
 
         const patternGrid = document.getElementById('pattern-grid');
         const rareTabs = document.getElementById('rare-tabs');
@@ -431,6 +432,10 @@
                     for (const s3 of g3) {
                         if (s3.name !== '-' && (s3.name === s1.name || s3.name === s2.name)) continue;
                         for (const slot of slotsArr) {
+                            const skills = [s1, s2, s3].filter(s => s.name !== '-');
+                            const hasDamageSkill = skills.some(s => DAMAGE_RELATED_SKILLS.includes(s.name));
+                            if (!hasDamageSkill) continue;
+
                             if (count >= maxDisplay) break;
 
                             const div = document.createElement('div');

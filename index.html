@@ -135,13 +135,13 @@
                     <!-- 1段目: 攻撃力, 会心率, 属性値 -->
                     <div
                         style="display: flex; justify-content: space-around; text-align: center; gap: 0.2rem; margin-bottom: 0.8rem; position: relative; z-index: 2;">
-                        <div style="font-size: 0.8rem; color: var(--color-text-muted);">攻撃力<br><span id="display-attack"
+                        <div style="font-size: 0.8rem; color: var(--color-text-muted);">攻撃力<br><span id="display-attack" class="tabular-nums"
                                 style="color: white; font-weight: bold; font-size: 1.6rem;">0</span></div>
                         <div style="font-size: 0.8rem; color: var(--color-text-muted);">会心率<br><span
-                                id="display-affinity"
+                                id="display-affinity" class="tabular-nums"
                                 style="color: white; font-weight: bold; font-size: 1.6rem;">0%</span></div>
                         <div style="font-size: 0.8rem; color: var(--color-text-muted);">属性値<br><span
-                                id="display-element"
+                                id="display-element" class="tabular-nums"
                                 style="color: white; font-weight: bold; font-size: 1.6rem;">0</span>
                         </div>
                     </div>
@@ -295,13 +295,13 @@
                         武器基礎ステータス</h3>
                     <div style="display: flex; justify-content: space-around; text-align: center; gap: 0.3rem;">
                         <div style="font-size: 0.75rem; color: var(--color-text-muted);">攻撃力<br><span
-                                id="base-atk-display"
+                                id="base-atk-display" class="tabular-nums"
                                 style="color: white; font-weight: bold; font-size: 1.1rem;">0</span></div>
                         <div style="font-size: 0.75rem; color: var(--color-text-muted);">会心率<br><span
-                                id="base-aff-display"
+                                id="base-aff-display" class="tabular-nums"
                                 style="color: white; font-weight: bold; font-size: 1.2rem;">0%</span></div>
                         <div style="font-size: 0.75rem; color: var(--color-text-muted);">属性値<br><span
-                                id="base-elem-display"
+                                id="base-elem-display" class="tabular-nums"
                                 style="color: white; font-weight: bold; font-size: 1.2rem;">0</span></div>
                     </div>
                 </div>
@@ -410,6 +410,15 @@
                         style="display: flex; flex-wrap: wrap; gap: 0.4rem; font-size: 0.75rem; min-height: 20px;">
                     </div>
                 </div>
+                
+                <div class="skill-search-container" style="margin-bottom: 1rem; position: sticky; top: 0; z-index: 100; background: rgba(0,0,0,0.85); padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <div style="display: flex; align-items: center; gap: 0.4rem;">
+                        <input type="text" id="skill-search-input" placeholder="スキル名称で検索..."
+                            style="flex: 1; padding: 0.6rem; border: 1px solid rgba(212,175,55,0.3); background: rgba(255,255,255,0.05); color: white; border-radius: 4px; font-size: 0.9rem; outline: none;">
+                        <button id="skill-search-clear" title="検索をクリア"
+                            style="padding: 0.5rem 0.75rem; background: rgba(212,175,55,0.15); border: 1px solid rgba(212,175,55,0.3); color: rgba(212,175,55,0.8); border-radius: 4px; font-size: 1rem; cursor: pointer; line-height: 1; transition: background 0.2s;">×</button>
+                    </div>
+                </div>
 
                 <div id="skills-selection-list"></div>
 
@@ -438,7 +447,7 @@
 
                     <div
                         style="text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.6rem; margin-bottom: 0.8rem;">
-                        <div id="display-expected-damage"
+                        <div id="display-expected-damage" class="tabular-nums"
                             style="color: #ffcc00; font-weight: bold; font-size: 2.2rem; text-shadow: 0 0 15px rgba(255,204,0,0.4);">
                             0</div>
                     </div>
@@ -451,14 +460,14 @@
                                 通常</div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.1rem; font-size: 0.7rem;">
                                 <span style="color: var(--color-text-muted);">物理:</span><span
-                                    id="display-phys-damage-normal"
+                                    id="display-phys-damage-normal" class="tabular-nums"
                                     style="color: white; font-weight: bold; text-align: right;">0</span>
                                 <span style="color: var(--color-text-muted);">属性:</span><span
-                                    id="display-elem-damage-normal"
+                                    id="display-elem-damage-normal" class="tabular-nums"
                                     style="color: white; font-weight: bold; text-align: right;">0</span>
                             </div>
                             <div style="margin-top: 0.4rem; font-size: 1rem; text-align: right; color: #ffcc00; font-weight: bold; border-top: 1px solid rgba(255,255,255,0.1);"
-                                id="display-total-damage-normal">0</div>
+                                id="display-total-damage-normal" class="tabular-nums">0</div>
                         </div>
                         <div
                             style="background: rgba(255,215,0,0.05); padding: 0.5rem; border-radius: 4px; border: 1px solid rgba(255,215,0,0.1);">
@@ -467,14 +476,14 @@
                                 会心</div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.1rem; font-size: 0.7rem;">
                                 <span style="color: rgba(255,255,255,0.6);">物理:</span><span
-                                    id="display-phys-damage-crit"
+                                    id="display-phys-damage-crit" class="tabular-nums"
                                     style="color: white; font-weight: bold; text-align: right;">0</span>
                                 <span style="color: rgba(255,255,255,0.6);">属性:</span><span
-                                    id="display-elem-damage-crit"
+                                    id="display-elem-damage-crit" class="tabular-nums"
                                     style="color: white; font-weight: bold; text-align: right;">0</span>
                             </div>
                             <div style="margin-top: 0.4rem; font-size: 1rem; text-align: right; color: #ffcc00; font-weight: bold; border-top: 1px solid rgba(255,215,0,0.2);"
-                                id="display-total-damage-crit">0</div>
+                                id="display-total-damage-crit" class="tabular-nums">0</div>
                         </div>
                     </div>
 
@@ -505,7 +514,7 @@
                         style="display: none; margin-top: 0.8rem; font-size: 0.8rem; background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; border: 1px solid rgba(50, 205, 50, 0.3);">
                         <div style="text-align: center; margin-bottom: 0.8rem; padding-bottom: 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
                             <div style="font-size: 0.7rem; color: #32cd32; margin-bottom: 0.2rem;">最大期待値</div>
-                            <div id="opt-expected-damage" style="color: #ffcc00; font-weight: bold; font-size: 1.8rem; text-shadow: 0 0 10px rgba(255,204,0,0.3);">0</div>
+                            <div id="opt-expected-damage" class="tabular-nums" style="color: #ffcc00; font-weight: bold; font-size: 1.8rem; text-shadow: 0 0 10px rgba(255,204,0,0.3);">0</div>
                         </div>
                         
                         <div style="display: flex; flex-direction: column; gap: 0.6rem;">

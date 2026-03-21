@@ -198,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
             skillsSelectionList.appendChild(mainHeader);
 
             // Optional subcategory grouping (attack, affinity, element, ammo, or null) within each main category
-            const subCategories = ['attack', 'affinity', 'element', 'ammo', null];
+            const subCategories = ['attack', 'affinity', 'element', 'ammo', 'utility', null];
             subCategories.forEach(subCat => {
                 const subSkills = catSkills.filter(s => s.subCategory === subCat);
                 if (subSkills.length === 0) return;
@@ -210,7 +210,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         attack: '攻撃力強化',
                         affinity: '会心率',
                         element: '属性・状態異常',
-                        ammo: '弾・矢強化'
+                        ammo: '弾・矢強化',
+                        utility: 'その他'
                     };
                     subHeader.textContent = catNames[subCat] || '';
                     subHeader.style.gridColumn = '1 / -1';
@@ -228,7 +229,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     row.innerHTML = `
                         <div class="skill-name" title="${skill.name}">${skill.name}</div>
                         <select id="skill-${skill.id}" data-skill-id="${skill.id}">
-                            ${Array.from({ length: skill.maxLevel + 1 }, (_, i) => `<option value="${i}">${i === 0 ? '---' : 'Lv.' + i}</option>`).join('')}
+                            ${Array.from({ length: skill.maxLevel + 1 }, (_, i) => {
+                                const levelName = (i > 0 && skill.effects && skill.effects[i-1] && skill.effects[i-1].name) ? ` (${skill.effects[i-1].name})` : '';
+                                return `<option value="${i}">${i === 0 ? '---' : 'Lv.' + i + levelName}</option>`;
+                            }).join('')}
                         </select>
                     `;
                     skillsSelectionList.appendChild(row);
@@ -238,6 +242,48 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
         });
+        
+        // スキル検索機能
+        const skillSearchInput = document.getElementById('skill-search-input');
+        const skillSearchClear = document.getElementById('skill-search-clear');
+
+        function applySkillFilter(term) {
+            const rows = skillsSelectionList.querySelectorAll('.skill-selector-row');
+            const titles = skillsSelectionList.querySelectorAll('.skill-category-title, .skill-subcategory-title');
+            if (term === '') {
+                rows.forEach(r => r.style.display = 'grid');
+                titles.forEach(t => t.style.display = 'block');
+                if (skillSearchClear) skillSearchClear.style.opacity = '0.4';
+                return;
+            }
+            titles.forEach(t => t.style.display = 'none');
+            rows.forEach(row => {
+                const skillName = row.querySelector('.skill-name').textContent.toLowerCase();
+                row.style.display = skillName.includes(term) ? 'grid' : 'none';
+            });
+            if (skillSearchClear) skillSearchClear.style.opacity = '1';
+        }
+
+        if (skillSearchInput) {
+            skillSearchInput.addEventListener('input', (e) => {
+                applySkillFilter(e.target.value.toLowerCase().trim());
+            });
+        }
+
+        if (skillSearchClear) {
+            skillSearchClear.style.opacity = '0.4';
+            skillSearchClear.addEventListener('click', () => {
+                skillSearchInput.value = '';
+                applySkillFilter('');
+                skillSearchInput.focus();
+            });
+            skillSearchClear.addEventListener('mouseenter', () => {
+                skillSearchClear.style.background = 'rgba(212,175,55,0.35)';
+            });
+            skillSearchClear.addEventListener('mouseleave', () => {
+                skillSearchClear.style.background = 'rgba(212,175,55,0.15)';
+            });
+        }
 
         // Listeners for Monster/Hitzone
         monsterSelect.addEventListener('change', () => {
@@ -626,7 +672,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 activeSKillData.forEach(skill => {
                     const badge = document.createElement('span');
                     badge.style.cssText = 'background: rgba(212, 175, 55, 0.2); color: #fff; padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(212, 175, 55, 0.3); display: inline-block; word-break: keep-all; font-weight: 500;';
-                    badge.textContent = `${skill.name} Lv${skill.currentLevel}`;
+                    const effect = skill.effects ? skill.effects[skill.currentLevel - 1] : null;
+                    const levelName = effect && effect.name ? `【${effect.name}】` : '';
+                    badge.textContent = `${skill.name}${levelName} Lv${skill.currentLevel}`;
                     activeSkillsList.appendChild(badge);
                 });
             }

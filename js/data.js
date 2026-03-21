@@ -7,3 +7,4 @@ export * from './data/skills.js';
 export * from './data/mechanics.js';
 export * from './data/monsters.js';
 export * from './data/motions.js';
+export * from './data/armor.js';

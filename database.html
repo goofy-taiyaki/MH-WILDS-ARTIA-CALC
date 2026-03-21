@@ -69,8 +69,40 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 8px;
             padding: 1rem;
-            position: sticky;
-            top: 1rem;
+        }
+
+        /* レア度折り畳み目次スタイル */
+        .rarity-nav-group summary {
+            cursor: pointer;
+            padding: 0.3rem 0.6rem;
+            font-size: 0.82rem;
+            color: rgba(212,175,55,0.7);
+            border-left: 2px solid rgba(212,175,55,0.4);
+            margin: 0.2rem 0;
+            user-select: none;
+            transition: color 0.2s;
+        }
+        .rarity-nav-group summary:hover {
+            color: var(--color-primary);
+            border-left-color: var(--color-primary);
+        }
+        .rarity-nav-group ul {
+            list-style: none;
+            padding-left: 1rem;
+            margin: 0;
+        }
+        .rarity-nav-group ul li a {
+            font-size: 0.78rem;
+            padding: 0.15rem 0.4rem;
+            color: var(--color-text-muted);
+            display: block;
+            text-decoration: none;
+            border-left: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .rarity-nav-group ul li a:hover {
+            color: var(--color-primary);
+            border-left-color: var(--color-primary);
         }
 
         .db-nav-list {
@@ -119,6 +151,138 @@
             flex-grow: 1;
             min-width: 0;
         }
+
+        .mobile-toc-title {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .db-layout {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 0.5rem;
+            }
+
+            .db-sidebar {
+                width: 100%;
+                background: rgba(10, 11, 13, 0.95);
+                margin-bottom: 1rem;
+                padding: 0.5rem 1rem;
+                border-radius: 8px;
+                border: 1px solid rgba(212,175,55,0.2);
+            }
+
+            .db-sidebar h3.desktop-toc-title {
+                display: none;
+            }
+
+            .mobile-toc-title {
+                display: block;
+                cursor: pointer;
+                color: var(--color-primary);
+                font-weight: bold;
+                font-size: 1rem;
+                padding: 0.5rem 0;
+                list-style: none;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .mobile-toc-title::after {
+                content: '▼';
+                font-size: 0.8rem;
+                transition: transform 0.3s;
+            }
+
+            details[open] .mobile-toc-title::after {
+                transform: rotate(180deg);
+            }
+
+            .db-nav-list {
+                max-height: 60vh;
+                overflow-y: auto;
+                margin-top: 0.5rem;
+                padding-bottom: 1rem;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .db-main-content {
+                width: 100%;
+            }
+
+            .db-section {
+                padding: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .db-table {
+                font-size: 0.75rem;
+            }
+
+            .db-table th,
+            .db-table td {
+                padding: 0.4rem 0.3rem;
+            }
+
+            /* TOC behavior for desktop */
+            #db-toc-container[open] .mobile-toc-title {
+                display: none;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .mobile-toc-title {
+                display: none !important;
+            }
+            #db-toc-container {
+                display: block !important;
+            }
+            #db-toc-container:not([open]) > *:not(summary) {
+                display: block !important;
+            }
+        }
+        /* トップへ戻るボタン */
+        #back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 48px;
+            height: 48px;
+            background: var(--color-primary);
+            color: var(--color-bg-dark);
+            border: none;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(212, 175, 55, 0.4);
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 9999;
+        }
+        #back-to-top.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        #back-to-top:hover {
+            background: #f0d060;
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.6);
+        }
+        @media (max-width: 768px) {
+            #back-to-top {
+                bottom: 1rem;
+                right: 1rem;
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+        }
     </style>
 </head>
 
@@ -138,10 +302,12 @@
 
     <div class="db-layout section-container">
         <aside class="db-sidebar">
-            <h3
-                style="color: var(--color-primary); margin-bottom: 1rem; font-size: 1.1rem; border-bottom: 1px solid rgba(212,175,55,0.3); padding-bottom: 0.5rem;">
-                目次</h3>
-            <ul class="db-nav-list">
+            <details id="db-toc-container" open>
+                <summary class="mobile-toc-title">目次を表示/非表示</summary>
+                <h3 class="desktop-toc-title"
+                    style="color: var(--color-primary); margin-bottom: 1rem; font-size: 1.1rem; border-bottom: 1px solid rgba(212,175,55,0.3); padding-bottom: 0.5rem;">
+                    目次</h3>
+                <ul class="db-nav-list">
                 <li><a href="#section-formulas">ダメージ計算式</a></li>
                 <li><a href="#section-excitation">激化タイプ上昇値</a></li>
                 <li>
@@ -186,7 +352,21 @@
                         </ul>
                     </details>
                 </li>
+                <li>
+                    <details>
+                        <summary
+                            style="cursor: pointer; padding: 0.5rem 0.8rem; color: var(--color-primary); transition: all 0.2s; border-radius: 4px; user-select: none;"
+                            onmouseover="this.style.background='rgba(212, 175, 55, 0.1)'"
+                            onmouseout="this.style.background='transparent'">
+                            防具データ (レア度別)
+                        </summary>
+                        <div id="nav-armor-sublist" style="padding-left: 0.5rem; margin-top: 0.3rem;">
+                            <!-- JS populated: rarity-grouped -->
+                        </div>
+                    </details>
+                </li>
             </ul>
+            </details>
         </aside>
 
         <main class="db-main-content">
@@ -205,8 +385,6 @@
                     <p><strong>【遠距離武器（弾）の計算式】</strong></p>
                     <p>物理ダメージ ＝ (武器倍率 × モーション値 × 物理肉質 × 物理乗算補正) / 10000<br>
                         属性ダメージ ＝ {(属性値 × 乗算補正 × 速射補正 ＋ 加算補正) × 属性肉質} / 1000<br>
-                        <span
-                            style="font-size:0.8rem; color:var(--color-text-muted);">※遠距離武器には切れ味補正はかかりません。現状、速射・乗算等の補正は1として計算されます。</span>
                     </p>
                 </div>
             </details>
@@ -247,13 +425,51 @@
                 <div id="db-motions" style="overflow-x: auto; margin-top: 1rem;"></div>
             </details>
 
+            <details id="section-armor" class="db-section" open>
+                <summary style="cursor: pointer; user-select: none;">
+                    <h2 class="font-accent"
+                        style="display: inline-block; color: var(--color-primary); border-bottom: 1px solid rgba(212,175,55,0.3); padding-bottom:0.5rem; margin-top: 0;">
+                        防具データ</h2>
+                </summary>
+                <div id="db-armor" style="overflow-x: auto; margin-top: 1rem;"></div>
+            </details>
+
         </main>
     </div>
     <footer style="text-align: center; padding: 2rem; color: var(--color-text-muted); font-size: 0.7rem;">
         <p>&copy; 2026 Artia Tracker Project. Images & Data &copy;CAPCOM CO., LTD. ALL RIGHTS RESERVED.</p>
     </footer>
 
+    <button id="back-to-top" title="トップへ戻る" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+        &#8679;
+    </button>
+
     <script type="module" src="js/db_main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // スマホ表示時に目次リンクをクリックしたら自動で閉じる
+            const toc = document.getElementById('db-toc-container');
+            if (toc) {
+                toc.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', () => {
+                        if (window.innerWidth <= 768) {
+                            toc.open = false;
+                        }
+                    });
+                });
+            }
+
+            // トップへ戻るボタンの表示制御
+            const backBtn = document.getElementById('back-to-top');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) {
+                    backBtn.classList.add('visible');
+                } else {
+                    backBtn.classList.remove('visible');
+                }
+            }, { passive: true });
+        });
+    </script>
 </body>
 
 </html>
