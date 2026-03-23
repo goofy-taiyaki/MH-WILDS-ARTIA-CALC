@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MHWilds Armor Set Searcher</title>
+    <title>ASST | MHWilds Simulation Tool</title>
+    <link rel="icon" href="icon/title.png" type="image/png">
+    <link rel="stylesheet" href="css/style.css">
     <style>
         :root {
             --color-bg: #0a0a0c;
@@ -26,22 +28,6 @@
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
         }
-
-        header {
-            padding: 2rem 1rem;
-            text-align: center;
-            background: linear-gradient(to bottom, #1a1a20, var(--color-bg));
-            border-bottom: 1px solid var(--color-border);
-        }
-
-        h1 {
-            font-family: var(--font-serif);
-            font-size: 2.5rem;
-            letter-spacing: 0.1em;
-            color: #fff;
-            text-shadow: 0 0 20px rgba(51, 153, 255, 0.3);
-        }
-
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -311,7 +297,7 @@
         .skill-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.7rem;
+            font-size: 0.85rem;
             color: var(--color-text);
             font-variant-numeric: tabular-nums;
         }
@@ -459,12 +445,170 @@
             padding: 4rem;
             color: var(--color-text-muted);
         }
+
+        /* Skill Selection Panel Styles from index.html */
+        .skills-panel {
+            background: var(--color-surface);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--color-border);
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .panel-title {
+            font-size: 1.2rem;
+            color: var(--color-primary);
+            border-bottom: 1px solid rgba(51, 153, 255, 0.3);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            font-family: var(--font-serif);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        #skills-selection-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 0.5rem 1rem;
+            max-height: 50vh;
+            overflow-y: auto;
+            padding-right: 0.8rem;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-primary) transparent;
+        }
+
+        #skills-selection-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #skills-selection-list::-webkit-scrollbar-thumb {
+            background: var(--color-primary);
+            border-radius: 10px;
+        }
+
+        .skill-category-title {
+            grid-column: 1 / -1;
+            font-size: 0.85rem;
+            color: var(--color-primary);
+            background: rgba(51, 153, 255, 0.1);
+            padding: 0.4rem 0.8rem;
+            margin: 0.8rem 0 0.4rem 0;
+            border-left: 3px solid var(--color-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .skill-subcategory-title {
+            grid-column: 1 / -1;
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            margin: 1rem 0 0.4rem 0;
+            padding-bottom: 0.2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .skill-selector-row {
+            display: grid;
+            grid-template-columns: 1fr 60px;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 0.4rem 0.6rem;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            transition: all 0.2s;
+        }
+
+        .skill-selector-row:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .skill-selector-row.selected {
+            background: rgba(51, 153, 255, 0.1);
+            border-color: rgba(51, 153, 255, 0.4);
+        }
+
+        .skill-selector-row.selected .skill-name {
+            color: var(--color-primary);
+            font-weight: bold;
+        }
+
+        .skill-name {
+            font-weight: 500;
+            font-size: 0.8rem;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .skill-selector-row select {
+            padding: 0.2rem;
+            font-size: 0.75rem;
+            background: #000;
+            color: #fff;
+            border: 1px solid #444;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .skill-search-container {
+            margin-bottom: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: var(--color-surface);
+            padding: 0.5rem 0;
+        }
+
+        #skill-search-input {
+            width: 100%;
+            padding: 0.6rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--color-border);
+            color: #fff;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        #active-skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-bottom: 1rem;
+            min-height: 20px;
+        }
+
+        .active-skill-badge {
+            background: rgba(51, 153, 255, 0.15);
+            border: 1px solid rgba(51, 153, 255, 0.4);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Armor Set Searcher</h1>
-        <p style="color: var(--color-text-muted); font-size: 0.9rem; margin-top: 0.5rem;">MHWilds シミュレーションツール</p>
+    <header class="site-header">
+        <nav class="site-nav container">
+            <a href="index.html" class="logo-link">
+                <img src="icon/title.png" alt="ASST" class="site-logo">
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">ダメージ計算</a>
+                <a href="asst.html" class="nav-link active">ASST</a>
+                <a href="damage_talisman.html" class="nav-link">お守り検索</a>
+                <a href="talisman.html" class="nav-link">お守りリスト</a>
+                <a href="database.html" class="nav-link">データベース</a>
+            </div>
+        </nav>
     </header>
 
     <div class="container">
@@ -573,6 +717,25 @@
                 <!-- スキル一覧がここに表示されます -->
             </div>
         </div>
+
+        <!-- Skill Selection Panel -->
+        <section class="skills-panel">
+            <h2 class="panel-title">目標スキル設定</h2>
+            
+            <div id="active-skills-container" style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--color-border);">
+                <div style="font-size: 0.85rem; font-weight: bold; color: var(--color-primary); margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
+                    <span>選択中のスキル</span>
+                    <button id="btn-clear-skills" style="background: transparent; border: 1px solid rgba(255,0,0,0.3); color: #ff6666; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; cursor: pointer;">クリア</button>
+                </div>
+                <div id="active-skills-list"></div>
+            </div>
+
+            <div class="skill-search-container">
+                <input type="text" id="skill-search-input" placeholder="スキル名称で検索...">
+            </div>
+
+            <div id="skills-selection-list"></div>
+        </section>
 
         <div id="results-container" class="results-grid">
             <!-- 結果がここに動的に生成されます -->

@@ -2,6 +2,7 @@ import { ARMOR } from './data/armor.js';
 import { DECORATIONS } from './data/decorations.js';
 import { SKILLS } from './data/skills.js';
 import { TALISMAN_GROUPS, TALISMAN_COMBINATIONS, TALISMAN_SLOTS } from './data/talisman.js';
+import { initOCR } from './modules/ocr.js';
 
 const SKILL_NAME_TO_ID = Object.fromEntries(SKILLS.map(s => [s.name, s.id]));
 const SKILL_BY_ID = Object.fromEntries(SKILLS.map((s, idx) => [s.id, { ...s, originalIndex: idx }]));
@@ -72,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderPickerList = (query) => {
         decoList.innerHTML = '<div class="deco-pick-item none" data-did="">未選択 (クリア)</div>';
         const filtered = DECORATIONS.filter(d => {
+            if (d.t !== 'w') return false; 
             if (d.sl > 3) return false;
             const matchQuery = (d.n.includes(query) || (d.sk && d.sk.some(s => s.n.includes(query))));
             return !query || matchQuery;
@@ -138,10 +140,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultsContainer = document.getElementById('results-container');
     const emptyMessage = document.getElementById('empty-message');
     const btnReSearch = document.getElementById('btn-re-search');
+    const skillsSelectionList = document.getElementById('skills-selection-list');
+    const skillSearchInput = document.getElementById('skill-search-input');
+    const activeSkillsList = document.getElementById('active-skills-list');
+    const btnClearSkills = document.getElementById('btn-clear-skills');
+    const cachedSkillSelects = {};
 
-    //初期表示のスキル構成バッジ
-    const targetSummaryEl = document.getElementById('target-summary');
-    if (targetSummaryEl) {
+    //初期表示のスキル構成バッジ更新関数
+    const updateTargetSummary = () => {
+        const targetSummaryEl = document.getElementById('target-summary');
+        if (!targetSummaryEl) return;
         targetSummaryEl.innerHTML = '';
         Object.keys(targetSkills).forEach(sid => {
             const s = SKILL_BY_ID[sid];
@@ -151,7 +159,143 @@ document.addEventListener('DOMContentLoaded', () => {
             badge.textContent = `${s.name} Lv${targetSkills[sid]}`;
             targetSummaryEl.appendChild(badge);
         });
+    };
+
+    // 初期化実行
+    updateTargetSummary();
+
+    // スキル設定UIの初期化
+    const initSkillSelectionUI = () => {
+        if (!skillsSelectionList) return;
+        skillsSelectionList.innerHTML = '';
+
+        const MAIN_CATEGORY_NAMES = { weapon: '武器スキル', armor: '防具スキル', series: 'シリーズスキル', group: 'グループスキル' };
+        const MAIN_CATEGORY_ORDER = ['weapon', 'armor', 'series', 'group'];
+
+        MAIN_CATEGORY_ORDER.forEach(mainCat => {
+            const catSkills = SKILLS.filter(s => s.mainCategory === mainCat);
+            if (catSkills.length === 0) return;
+
+            const mainHeader = document.createElement('div');
+            mainHeader.className = 'skill-category-title';
+            mainHeader.textContent = MAIN_CATEGORY_NAMES[mainCat];
+            skillsSelectionList.appendChild(mainHeader);
+
+            const subCategories = ['attack', 'affinity', 'element', 'ammo', 'utility', null];
+            subCategories.forEach(subCat => {
+                const subSkills = catSkills.filter(s => s.subCategory === subCat);
+                if (subSkills.length === 0) return;
+
+                if (subCat !== null) {
+                    const subHeader = document.createElement('div');
+                    subHeader.className = 'skill-subcategory-title';
+                    const catNames = { attack: '攻撃力強化', affinity: '会心率', element: '属性・状態異常', ammo: '弾・矢強化', utility: 'その他' };
+                    subHeader.textContent = catNames[subCat] || '';
+                    skillsSelectionList.appendChild(subHeader);
+                }
+
+                subSkills.forEach(skill => {
+                    const row = document.createElement('div');
+                    row.className = 'skill-selector-row';
+                    if (targetSkills[skill.id]) row.classList.add('selected');
+
+                    row.innerHTML = `
+                        <div class="skill-name" title="${skill.name}">${skill.name}</div>
+                        <select id="skill-${skill.id}" data-skill-id="${skill.id}">
+                            ${Array.from({ length: skill.maxLevel + 1 }, (_, i) => {
+                                return `<option value="${i}">${i === 0 ? '---' : 'Lv.' + i}</option>`;
+                            }).join('')}
+                        </select>
+                    `;
+                    skillsSelectionList.appendChild(row);
+                    const selectEl = row.querySelector('select');
+                    cachedSkillSelects[skill.id] = selectEl;
+                    selectEl.value = targetSkills[skill.id] || 0;
+
+                    selectEl.addEventListener('change', (e) => {
+                        const lvl = parseInt(e.target.value);
+                        if (lvl > 0) {
+                            targetSkills[skill.id] = lvl;
+                            row.classList.add('selected');
+                        } else {
+                            delete targetSkills[skill.id];
+                            row.classList.remove('selected');
+                        }
+                        updateActiveSkillsUI();
+                        updateTargetSummary();
+                    });
+                });
+            });
+        });
+        updateActiveSkillsUI();
+        
+        // OCRの初期化
+        initOCR(SKILLS, cachedSkillSelects, () => {
+            // OCR適用後の後処理: targetSkillsを同期し、UIを更新する
+            Object.keys(cachedSkillSelects).forEach(sid => {
+                const selectEl = cachedSkillSelects[sid];
+                const lvl = parseInt(selectEl.value);
+                const row = selectEl.closest('.skill-selector-row');
+                if (lvl > 0) {
+                    targetSkills[sid] = lvl;
+                    if (row) row.classList.add('selected');
+                } else {
+                    delete targetSkills[sid];
+                    if (row) row.classList.remove('selected');
+                }
+            });
+            updateActiveSkillsUI();
+            updateTargetSummary();
+        });
+    };
+
+    const updateActiveSkillsUI = () => {
+        if (!activeSkillsList) return;
+        activeSkillsList.innerHTML = '';
+        Object.keys(targetSkills).sort((a,b) => (SKILL_BY_ID[a]?.originalIndex || 0) - (SKILL_BY_ID[b]?.originalIndex || 0)).forEach(sid => {
+            const skill = SKILL_BY_ID[sid];
+            if (!skill) return;
+            const badge = document.createElement('div');
+            badge.className = 'active-skill-badge';
+            badge.innerHTML = `<span>${skill.name} Lv${targetSkills[sid]}</span>`;
+            activeSkillsList.appendChild(badge);
+        });
+    };
+
+    const applySkillFilter = (term) => {
+        const rows = skillsSelectionList.querySelectorAll('.skill-selector-row');
+        const titles = skillsSelectionList.querySelectorAll('.skill-category-title, .skill-subcategory-title');
+        if (term === '') {
+            rows.forEach(r => r.style.display = 'grid');
+            titles.forEach(t => t.style.display = 'block');
+            return;
+        }
+        titles.forEach(t => t.style.display = 'none');
+        rows.forEach(row => {
+            const skillName = row.querySelector('.skill-name').textContent.toLowerCase();
+            row.style.display = skillName.includes(term) ? 'grid' : 'none';
+        });
+    };
+
+    if (skillSearchInput) {
+        skillSearchInput.addEventListener('input', (e) => applySkillFilter(e.target.value.toLowerCase().trim()));
     }
+
+    if (btnClearSkills) {
+        btnClearSkills.addEventListener('click', () => {
+            Object.keys(targetSkills).forEach(sid => {
+                delete targetSkills[sid];
+                if (cachedSkillSelects[sid]) {
+                    cachedSkillSelects[sid].value = 0;
+                    cachedSkillSelects[sid].closest('.skill-selector-row').classList.remove('selected');
+                }
+            });
+            updateActiveSkillsUI();
+            updateTargetSummary();
+        });
+    }
+
+    initSkillSelectionUI();
 
     if (weaponSsSelect) {
         weaponSsSelect.innerHTML = '<option value="">武器固有：自動選択</option>';
@@ -532,7 +676,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             });
-            for (const sid in decoBySkill) decoBySkill[sid].sort((a, b) => b.pts/b.lvl - a.pts/b.lvl || b.pts - a.pts);
+            for (const sid in decoBySkill) decoBySkill[sid].sort((a, b) => b.pts/b.lvl - a.pts/a.lvl || b.pts - a.pts);
 
             let resultsCount = 0;
             const stack = [{ part: 0, currentSkills: { ...wSkills }, currentItems: [] }];
@@ -626,9 +770,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (totalNeeded === 0) return { decos: [], autoSS: usedAutoSS, autoGS: usedAutoGS };
 
                 const slotObjects = [];
-                [h, c, a, w, l].forEach((item, idx) => { item.slots.filter(s => (s.lvl || s) > 0).forEach(s => slotObjects.push({ piece: idx, lvl: s.lvl || s })); });
-                wS.forEach(s => slotObjects.push({ piece: 'weapon', lvl: s }));
-                t.slots.forEach(s => slotObjects.push({ piece: 'talisman', lvl: s.lvl || s }));
+                [h, c, a, w, l].forEach((item, idx) => {
+                    item.slots.filter(s => (s.lvl || s) > 0).forEach(s => {
+                        slotObjects.push({ piece: idx, lvl: s.lvl || s, type: 'a' });
+                    });
+                });
+                wS.forEach(s => {
+                    if (s > 0) slotObjects.push({ piece: 'weapon', lvl: s, type: 'w' });
+                });
+                t.slots.forEach(s => {
+                    const lvl = s.lvl || s;
+                    if (lvl > 0) slotObjects.push({ piece: 'talisman', lvl, type: s.type || 'a' });
+                });
                 slotObjects.sort((x, y) => x.lvl - y.lvl);
 
                 const decosUsed = [];
@@ -648,7 +801,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (nPts <= 0) { const nextMissing = { ...missing }; delete nextMissing[id]; return canFillWithTracking(nextMissing, curSlots, deccos, decosUsed); }
                     if (dIdx >= usable.length) return false;
                     const deco = usable[dIdx];
-                    const sIdx = curSlots.findIndex(s => s.lvl >= deco.lvl);
+                    const sIdx = curSlots.findIndex(s => s.lvl >= deco.lvl && s.type === deco.type);
                     if (sIdx === -1) return branchFill(id, nPts, curSlots, dIdx + 1);
                     const nextSlots = [...curSlots]; const usedSlot = nextSlots.splice(sIdx, 1)[0];
                     decosUsed.push({ deco, piece: usedSlot.piece });
@@ -752,7 +905,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return html;
         };
         const formatRes = (r) => r ? `${r[0]} / ${r[1]} / ${r[2]} / ${r[3]} / ${r[4]}` : '0 / 0 / 0 / 0 / 0';
-        const getResHtml = (r) => r.map((v) => `<span class="stat-val" style="margin-right:4px;">${v}</span>`).join('');
+        const getResHtml = (r) => r.map((v) => `<span class="stat-val">${v}</span>`).join(' / ');
 
         const getFullPieceSkills = (item) => {
             let html = '';
@@ -858,8 +1011,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="result-header">
                 <div style="font-family: var(--font-serif); font-weight: bold; color: var(--color-accent);">SET #${idx}</div>
                 <div class="defense-info">
-                    防御: <span class="stat-val">${stats.def}</span>
-                    <span style="font-size:0.7rem; color:var(--color-text-muted); margin-left:12px; margin-right:4px;">耐性:</span>
+                    防御力: <span class="stat-val">${stats.def}</span>
+                    <span style="font-size:0.75rem; color:var(--color-text-muted); margin-left:12px; margin-right:4px;">耐:</span>
                     <span class="stat-val" style="font-size:0.85rem;">${getResHtml(stats.res)}</span>
                 </div>
             </div>

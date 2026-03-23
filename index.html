@@ -39,26 +39,17 @@
 </head>
 
 <body>
-    <header>
-        <nav class="section-container"
-            style="display: flex; justify-content: space-between; align-items: center; padding: 1rem;">
-            <div class="logo font-accent"
-                style="display: flex; align-items: center;">
+    <header class="site-header">
+        <nav class="site-nav section-container">
+            <a href="index.html" class="logo-link">
                 <img src="icon/title.png" alt="DAMAGE _SIMULATOR" class="site-logo">
-            </div>
-            <div style="display: flex; gap: 0.5rem;">
-                <a href="damage_talisman.html"
-                    style="color: var(--color-primary); text-decoration: none; border: 1px solid var(--color-primary); padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.9rem; transition: background 0.2s; background: rgba(255, 204, 0, 0.1);"
-                    onmouseover="this.style.background='var(--color-primary)'; this.style.color='var(--color-bg-dark)';"
-                    onmouseout="this.style.background='rgba(255, 204, 0, 0.1)'; this.style.color='var(--color-primary)';">お守り検索</a>
-                <a href="talisman.html"
-                    style="color: var(--color-primary); text-decoration: none; border: 1px solid var(--color-primary); padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.9rem; transition: background 0.2s;"
-                    onmouseover="this.style.background='var(--color-primary)'; this.style.color='var(--color-bg-dark)';"
-                    onmouseout="this.style.background='transparent'; this.style.color='var(--color-primary)';">お守りリスト</a>
-                <a href="database.html"
-                    style="color: var(--color-primary); text-decoration: none; border: 1px solid var(--color-primary); padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.9rem; transition: background 0.2s;"
-                    onmouseover="this.style.background='var(--color-primary)'; this.style.color='var(--color-bg-dark)';"
-                    onmouseout="this.style.background='transparent'; this.style.color='var(--color-primary)';">データベース</a>
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link active">ダメージ計算</a>
+                <a href="asst.html" class="nav-link">ASST</a>
+                <a href="damage_talisman.html" class="nav-link">お守り検索</a>
+                <a href="talisman.html" class="nav-link">お守りリスト</a>
+                <a href="database.html" class="nav-link">データベース</a>
             </div>
         </nav>
     </header>
