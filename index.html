@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DAMAGE _SIMULATOR | アーティア計算機</title>
-    <link rel="icon" href="icon/title.png" type="image/png">
+    <link rel="icon" href="assets/icons/title.png" type="image/png">
     <meta name="description" content="巨戟アーティア武器専用のダメージ計算機。復元パーツ・ボーナスとモンスター肉質を組み合わせた詳細シミュレーション。">
     <link rel="stylesheet" href="css/style.css">
     <style>
@@ -137,6 +137,15 @@
                         <div style="font-size: 0.8rem; color: var(--color-text-muted);">属性値<br><span
                                 id="display-element" class="tabular-nums"
                                 style="color: white; font-weight: bold; font-size: 1.6rem;">0</span>
+                        </div>
+                    </div>
+
+                    <!-- 装備構成詳細 (共有URLやASSTから読み込まれた場合のみ表示) -->
+                    <div id="equipped-armor-panel" class="damage-section-box" 
+                        style="display: none; margin-top: 1rem; padding: 0.8rem; background: rgba(0, 191, 255, 0.05); border: 1px solid rgba(0, 191, 255, 0.2); border-radius: 8px;">
+                        <h3 style="font-size: 0.85rem; color: #00bfff; margin-bottom: 0.6rem; text-align: center; font-weight: bold;">装備構成詳細</h3>
+                        <div id="equipped-armor-list" style="font-size: 0.75rem; color: #eee; line-height: 1.4; display: flex; flex-direction: column; gap: 0.3rem;">
+                            <!-- JSで生成 -->
                         </div>
                     </div>
 

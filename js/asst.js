@@ -4,6 +4,7 @@ import { SKILLS } from './data/skills.js';
 import { TALISMAN_GROUPS, TALISMAN_COMBINATIONS, TALISMAN_SLOTS } from './data/talisman.js';
 import { initOCR } from './modules/ocr.js';
 import { buildSkillMatrix, sortActivatedSkills } from './result_renderer.js';
+import { BuildShare } from './modules/share.js';
 
 const SKILL_NAME_TO_ID = Object.fromEntries(SKILLS.map(s => [s.name, s.id]));
 const SKILL_BY_ID = Object.fromEntries(SKILLS.map((s, idx) => [s.id, { ...s, originalIndex: idx }]));
@@ -1544,12 +1545,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!setName) return;
             
             const sets = JSON.parse(localStorage.getItem('mhwilds_mysets') || '{}');
-            // 計算機ページ(main.js)の形式に合わせてデータを構成
             const data = {
                 currentSkillLevels: { ...target },
                 weaponTypeId: document.getElementById('weapon-type-select')?.value || 'gs',
                 timestamp: Date.now(),
-                // アーティア初期設定 (最強攻撃構成)
                 excitationType: 'attack',
                 parts: ['attack', 'attack', 'attack'],
                 bonuses: ['atk_3', 'atk_3', 'atk_ex', 'atk_ex', 'sharp_load_ex'],
@@ -1564,7 +1563,37 @@ document.addEventListener('DOMContentLoaded', () => {
             updateMySetList();
             alert(`「${setName}」を計算機ページのマイセットとして保存しました。`);
         };
-        card.querySelector('.result-header').appendChild(saveBtn);
+
+        const shareBtn = document.createElement('button');
+        shareBtn.className = 'btn btn-share-set';
+        shareBtn.style.cssText = 'margin-left: 0.5rem; font-size: 0.7rem; padding: 4px 10px; background: rgba(0, 191, 255, 0.1); border: 1px solid rgba(0, 191, 255, 0.3); color: #00bfff;';
+        shareBtn.textContent = '共有URL';
+        shareBtn.onclick = () => {
+            const currentUrl = new URL(window.location.href);
+            const params = new URLSearchParams(currentUrl.search);
+            
+            // 既存のスキルパラメータをクリア
+            SKILLS.forEach(s => params.delete(s.id));
+            
+            // この構成で実際に「発動しているスキル」をパラメータにセット
+            activatedRows.forEach(row => {
+                if (row.lvl > 0) {
+                    params.set(row.id, row.lvl);
+                }
+            });
+
+            currentUrl.search = params.toString();
+            currentUrl.hash = ''; // スキル共有のためハッシュは使用しない
+
+            const shareUrl = currentUrl.href;
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                alert('この構成で発動しているスキルの、ASST共有URLをコピーしました。\nこのリンクを開くと、現在の合計スキルが選択された状態でASSTが起動します。');
+            });
+        };
+
+        const header = card.querySelector('.result-header');
+        header.appendChild(saveBtn);
+        header.appendChild(shareBtn);
 
         resultsContainer.appendChild(card);
     }

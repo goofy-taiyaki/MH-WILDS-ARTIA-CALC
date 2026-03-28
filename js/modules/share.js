@@ -5,15 +5,18 @@ export const BuildShare = {
     /**
      * 現在の状態をエンコードしてURLパラメータを生成
      */
-    generateUrl(state) {
+    generateUrl(state, baseUrl = window.location.href) {
         try {
             const data = JSON.stringify(state);
             // 互換性と短縮のためBase64化（btoaだけだと日本語が壊れるため、UTF-8対応版）
             const encoded = btoa(encodeURIComponent(data).replace(/%([0-9A-F]{2})/g, (match, p1) => {
                 return String.fromCharCode('0x' + p1);
             }));
-            const url = new URL(window.location.href);
-            url.searchParams.set('build', encoded);
+            const url = new URL(baseUrl);
+            // サーバーのリダイレクトで消えないよう、ハッシュ(#)に格納することを推奨
+            url.hash = `build=${encoded}`;
+            // 互換性のためクエリからも消しておく（任意）
+            url.searchParams.delete('build');
             return url.toString();
         } catch (e) {
             console.error('Failed to generate share URL', e);
@@ -22,15 +25,24 @@ export const BuildShare = {
     },
 
     /**
-     * URLパラメータから状態をデコード
+     * URLパラメータまたはハッシュから状態をデコード
      */
     decodeUrl() {
         const urlParams = new URLSearchParams(window.location.search);
-        const encoded = urlParams.get('build');
+        let encoded = urlParams.get('build');
+
+        // クエリになければハッシュを確認
+        if (!encoded && window.location.hash) {
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            encoded = hashParams.get('build');
+        }
+
         if (!encoded) return null;
 
         try {
-            const decoded = decodeURIComponent(Array.prototype.map.call(atob(encoded), (c) => {
+            // URLパラメータ経由だと '+' が ' ' (スペース) に置換されることがあるため補正
+            const safeEncoded = encoded.replace(/ /g, '+');
+            const decoded = decodeURIComponent(Array.prototype.map.call(atob(safeEncoded), (c) => {
                 return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
             }).join(''));
             return JSON.parse(decoded);

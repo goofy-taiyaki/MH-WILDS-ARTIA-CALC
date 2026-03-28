@@ -68,10 +68,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const displayExpectedDamage = document.getElementById('display-expected-damage');
 
-    const baseAtkDisplay = document.getElementById('base-atk-display');
-    const baseElemDisplay = document.getElementById('base-elem-display');
     const baseAffDisplay = document.getElementById('base-aff-display');
     const displayHitDetails = document.getElementById('display-hit-details');
+    
+    // ASSTから連携された装備構成データ
+    let currentLoadedAsstBuildData = null;
 
     function init() {
         // Weapon Types
@@ -508,9 +509,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         hitzoneDetailPanel.innerHTML = `
             <div style="grid-column: span 4; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px; margin-bottom: 5px;">
-                <div style="${hl('sever', weaponCat)} display: flex; align-items: center; justify-content: center; gap: 4px;"><img src="icon/hit_slash.png" alt="切断" style="width: 20px; height: 20px; object-fit: contain;"> ${hitzone.sever}</div>
-                <div style="${hl('blunt', weaponCat)} display: flex; align-items: center; justify-content: center; gap: 4px;"><img src="icon/hit_strike.png" alt="打撃" style="width: 20px; height: 20px; object-fit: contain;"> ${hitzone.blunt}</div>
-                <div style="${hl('ammo', weaponCat)} display: flex; align-items: center; justify-content: center; gap: 4px;"><img src="icon/hit_shell.png" alt="弾" style="width: 20px; height: 20px; object-fit: contain;"> ${hitzone.ammo}</div>
+                <div style="${hl('sever', weaponCat)} display: flex; align-items: center; justify-content: center; gap: 4px;"><img src="assets/icons/hit_slash.png" alt="切断" style="width: 20px; height: 20px; object-fit: contain;"> ${hitzone.sever}</div>
+                <div style="${hl('blunt', weaponCat)} display: flex; align-items: center; justify-content: center; gap: 4px;"><img src="assets/icons/hit_strike.png" alt="打撃" style="width: 20px; height: 20px; object-fit: contain;"> ${hitzone.blunt}</div>
+                <div style="${hl('ammo', weaponCat)} display: flex; align-items: center; justify-content: center; gap: 4px;"><img src="assets/icons/hit_shell.png" alt="弾" style="width: 20px; height: 20px; object-fit: contain;"> ${hitzone.ammo}</div>
                 <div></div>
             </div>
             <div style="grid-column: span 4; display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.2rem; text-align: center;">
@@ -998,7 +999,8 @@ document.addEventListener('DOMContentLoaded', () => {
             bowgunSettings: {
                 rapidFire: bowgunRapidFire ? bowgunRapidFire.checked : false,
                 chaseShot: bowgunChaseShot ? bowgunChaseShot.checked : false
-            }
+            },
+            asst_build_data: currentLoadedAsstBuildData
         };
     }
 
@@ -1097,14 +1099,55 @@ document.addEventListener('DOMContentLoaded', () => {
         // 3. スキルの復元（新形式と旧形式の両方に対応）
         const skillData = state.currentSkillLevels || state.skills;
         if (skillData) {
+            console.log('Loading skills:', skillData);
             Object.entries(skillData).forEach(([id, lv]) => {
                 const select = cachedSkillSelects[id];
-                if (select) select.value = lv;
+                if (select) {
+                    select.value = String(lv);
+                } else {
+                    console.warn(`Skill ID not found in UI: ${id}`);
+                }
             });
         }
 
         updateCalculation();
-        updateWeaponSpecificUI();
+        // 各部位のUIへの紐付け（必要な場合）
+        const equippedArmorPanel = document.getElementById('equipped-armor-panel');
+        const equippedArmorList = document.getElementById('equipped-armor-list');
+
+        // 装備構成の表示 (ASSTビルドデータが含まれる場合)
+        if (state.asst_build_data && equippedArmorPanel && equippedArmorList) {
+            currentLoadedAsstBuildData = state.asst_build_data;
+            equippedArmorPanel.style.display = 'block';
+            const b = state.asst_build_data;
+            let html = '';
+            if (b.h) html += `<div>[頭] ${b.h}</div>`;
+            if (b.c) html += `<div>[胴] ${b.c}</div>`;
+            if (b.a) html += `<div>[腕] ${b.a}</div>`;
+            if (b.w) html += `<div>[腰] ${b.w}</div>`;
+            if (b.l) html += `<div>[脚] ${b.l}</div>`;
+            if (b.t) html += `<div style="color: var(--color-accent);">[石] ${b.t}</div>`;
+            
+            // 装飾品
+            if (b.decos && b.decos.length > 0) {
+                html += '<div style="margin-top:0.3rem; border-top:1px dashed rgba(255,255,255,0.1); padding-top:0.3rem; font-size:0.65rem; color:#aaa;">';
+                const decosByPiece = {};
+                b.decos.forEach(d => {
+                    const pieceShort = d.p ? d.p.charAt(0).toUpperCase() : '?';
+                    if (!decosByPiece[pieceShort]) decosByPiece[pieceShort] = [];
+                    decosByPiece[pieceShort].push(d.n);
+                });
+                
+                Object.entries(decosByPiece).forEach(([piece, names]) => {
+                    html += `<div>${piece}: ${names.join(', ')}</div>`;
+                });
+                html += '</div>';
+            }
+            equippedArmorList.innerHTML = html;
+        } else if (equippedArmorPanel) {
+            currentLoadedAsstBuildData = null;
+            equippedArmorPanel.style.display = 'none';
+        }
     }
 
 
@@ -1215,10 +1258,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // 共有URLからのビルド読込チェック
     const sharedBuild = BuildShare.decodeUrl();
     if (sharedBuild) {
+        // init() 完了後、確実にDOMが更新されたタイミングで実行
+        console.log('Build data found in URL, loading...');
         setTimeout(() => {
             loadStateIntoUI(sharedBuild);
-            alert('共有URLからビルドを読み込みました。');
-        }, 100);
+            console.log('Build load complete.');
+        }, 200);
     }
 
     // 防具検索ボタン

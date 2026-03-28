@@ -46,14 +46,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         <thead>
                             <tr>
                                 <th>部位</th>
-                                <th style="text-align:center;"><img src="icon/hit_slash.png" alt="切断" style="width:16px; height:16px; vertical-align:middle; object-fit:contain;"></th>
-                                <th style="text-align:center;"><img src="icon/hit_strike.png" alt="打撃" style="width:16px; height:16px; vertical-align:middle; object-fit:contain;"></th>
-                                <th style="text-align:center;"><img src="icon/hit_shell.png" alt="弾" style="width:16px; height:16px; vertical-align:middle; object-fit:contain;"></th>
-                                <th style="text-align:center;"><img src="icon/element_fire.png" alt="火" style="width:16px; height:16px; vertical-align:middle; object-fit:contain;"></th>
-                                <th style="text-align:center;"><img src="icon/element_water.png" alt="水" style="width:16px; height:16px; vertical-align:middle; object-fit:contain;"></th>
-                                <th style="text-align:center;"><img src="icon/element_thunder.png" alt="雷" style="width:16px; height:16px; vertical-align:middle; object-fit:contain;"></th>
-                                <th style="text-align:center;"><img src="icon/element_ice.png" alt="氷" style="width:16px; height:16px; vertical-align:middle; object-fit:contain;"></th>
-                                <th style="text-align:center;"><img src="icon/element_dragon.png" alt="龍" style="width:16px; height:16px; vertical-align:middle; object-fit:contain;"></th>
+                                <th style="text-align:center;"><img src="assets/icons/hit_slash.png" alt="切断" style="width:16px; height:16px; vertical-align:middle; object-fit:contain;"></th>
+                                <th style="text-align:center;"><img src="assets/icons/hit_strike.png" alt="打撃" style="width:16px; height:16px; vertical-align:middle; object-fit:contain;"></th>
+                                <th style="text-align:center;"><img src="assets/icons/hit_shell.png" alt="弾" style="width:16px; height:16px; vertical-align:middle; object-fit:contain;"></th>
+                                <th style="text-align:center;"><img src="assets/icons/element_fire.png" alt="火" style="width:16px; height:16px; vertical-align:middle; object-fit:contain;"></th>
+                                <th style="text-align:center;"><img src="assets/icons/element_water.png" alt="水" style="width:16px; height:16px; vertical-align:middle; object-fit:contain;"></th>
+                                <th style="text-align:center;"><img src="assets/icons/element_thunder.png" alt="雷" style="width:16px; height:16px; vertical-align:middle; object-fit:contain;"></th>
+                                <th style="text-align:center;"><img src="assets/icons/element_ice.png" alt="氷" style="width:16px; height:16px; vertical-align:middle; object-fit:contain;"></th>
+                                <th style="text-align:center;"><img src="assets/icons/element_dragon.png" alt="龍" style="width:16px; height:16px; vertical-align:middle; object-fit:contain;"></th>
                             </tr>
                         </thead>
                         <tbody>`;
@@ -289,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const RES_ICONS = [
-        'icon/element_fire.png', 'icon/element_water.png', 'icon/element_thunder.png', 'icon/element_ice.png', 'icon/element_dragon.png'
+        'assets/icons/element_fire.png', 'assets/icons/element_water.png', 'assets/icons/element_thunder.png', 'assets/icons/element_ice.png', 'assets/icons/element_dragon.png'
     ];
 
     // Group ARMOR by series
@@ -534,3 +534,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 });
+
