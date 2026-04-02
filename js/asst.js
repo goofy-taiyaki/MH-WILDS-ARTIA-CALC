@@ -208,43 +208,44 @@ document.addEventListener('DOMContentLoaded', () => {
     //初期表示のスキル構成バッジ更新関数
     const updateTargetSummary = () => {
         const targetSummaryEl = document.getElementById('target-summary');
-        if (!targetSummaryEl) return;
-        targetSummaryEl.innerHTML = '';
-        
-        // 仕様に基づくソート: メインカテゴリ > レベル > 内部順序
-        const sortedIds = Object.keys(targetSkills).sort((a, b) => {
-            const sA = SKILL_BY_ID[a], sB = SKILL_BY_ID[b];
-            const lA = targetSkills[a], lB = targetSkills[b];
+        if (targetSummaryEl) {
+            targetSummaryEl.innerHTML = '';
             
-            const catPoints = { 'weapon': 1, 'armor': 2, 'series': 3, 'group': 4 };
-            const pA = catPoints[sA.mainCategory] || 2;
-            const pB = catPoints[sB.mainCategory] || 2;
-            if (pA !== pB) return pA - pB;
-            
-            if (lA !== lB) return lB - lA;
-            return (sA.originalIndex || 0) - (sB.originalIndex || 0);
-        });
+            // 仕様に基づくソート: メインカテゴリ > レベル > 内部順序
+            const sortedIds = Object.keys(targetSkills).sort((a, b) => {
+                const sA = SKILL_BY_ID[a], sB = SKILL_BY_ID[b];
+                const lA = targetSkills[a], lB = targetSkills[b];
+                
+                const catPoints = { 'weapon': 1, 'armor': 2, 'series': 3, 'group': 4 };
+                const pA = catPoints[sA.mainCategory] || 2;
+                const pB = catPoints[sB.mainCategory] || 2;
+                if (pA !== pB) return pA - pB;
+                
+                if (lA !== lB) return lB - lA;
+                return (sA.originalIndex || 0) - (sB.originalIndex || 0);
+            });
 
-        sortedIds.forEach(sid => {
-            const s = SKILL_BY_ID[sid];
-            if (!s) return;
-            const badge = document.createElement('span');
-            badge.className = 'target-skill-badge';
-            
-            let label = "";
-            if (s.mainCategory === 'series' || s.mainCategory === 'group') {
-                const prefix = s.mainCategory === 'series' ? '[S]' : '[G]';
-                const seriesName = s.name.replace(/[ⅠⅡⅢⅣⅤ]$/, '').trim();
-                const lvl = targetSkills[sid];
-                const effect = (s.effects && s.effects[lvl - 1]) ? s.effects[lvl - 1] : null;
-                const effectName = effect && effect.name ? ` (${effect.name})` : '';
-                label = `${prefix} ${seriesName}${effectName}`;
-            } else {
-                label = `${s.name} Lv${targetSkills[sid]}`;
-            }
-            badge.textContent = label;
-            targetSummaryEl.appendChild(badge);
-        });
+            sortedIds.forEach(sid => {
+                const s = SKILL_BY_ID[sid];
+                if (!s) return;
+                const badge = document.createElement('span');
+                badge.className = 'target-skill-badge';
+                
+                let label = "";
+                if (s.mainCategory === 'series' || s.mainCategory === 'group') {
+                    const prefix = s.mainCategory === 'series' ? '[S]' : '[G]';
+                    const seriesName = s.name.replace(/[ⅠⅡⅢⅣⅤ]$/, '').trim();
+                    const lvl = targetSkills[sid];
+                    const effect = (s.effects && s.effects[lvl - 1]) ? s.effects[lvl - 1] : null;
+                    const effectName = effect && effect.name ? ` (${effect.name})` : '';
+                    label = `${prefix} ${seriesName}${effectName}`;
+                } else {
+                    label = `${s.name} Lv${targetSkills[sid]}`;
+                }
+                badge.textContent = label;
+                targetSummaryEl.appendChild(badge);
+            });
+        }
 
         // 武器設定の☆マークも更新
         updateWeaponSkillSelects();

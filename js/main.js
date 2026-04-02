@@ -68,7 +68,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const displayExpectedDamage = document.getElementById('display-expected-damage');
 
+    const baseAtkDisplay = document.getElementById('base-atk-display');
     const baseAffDisplay = document.getElementById('base-aff-display');
+    const baseElemDisplay = document.getElementById('base-elem-display');
     const displayHitDetails = document.getElementById('display-hit-details');
     
     // ASSTから連携された装備構成データ
